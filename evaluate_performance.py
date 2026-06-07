@@ -1,7 +1,8 @@
-from sklearn.metrics import accuracy_score, precision_score, recall_score, classification_report
+from sklearn.metrics import accuracy_score, precision_score, recall_score, classification_report, confusion_matrix
 from text_pipeline import TextPipeline
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 dataset = [
     ("I am absolutely thrilled with the results of this project.", "positive"),
@@ -52,7 +53,48 @@ print(f"Accuracy: {accuracy * 100:.2f}%")
 print(f"Precision: {precision * 100:.2f}%")
 print(f"Recall: {recall * 100:.2f}%")
 print(f"F1-Score: {f1 * 100:.2f}%")
+print("\nClassification Report:")
 print(classification_report(y_true, y_pred))
 
+# Calculate Confusion Matrix
+labels = ["negative", "neutral", "positive"]
+cm = confusion_matrix(y_true, y_pred, labels=labels)
+print("\nConfusion Matrix:")
+print("Labels:", labels)
+print(cm)
+
+# Save metrics text output
 with open('metrics_output.txt', 'w') as f:
-    f.write(f"{accuracy*100:.2f},{precision*100:.2f},{recall*100:.2f},{f1*100:.2f}")
+    f.write(f"Accuracy: {accuracy*100:.2f}%\n")
+    f.write(f"Precision: {precision*100:.2f}%\n")
+    f.write(f"Recall: {recall*100:.2f}%\n")
+    f.write(f"F1-Score: {f1*100:.2f}%\n\n")
+    f.write("Confusion Matrix:\n")
+    f.write(f"Labels: {labels}\n")
+    f.write(f"{cm}\n")
+
+# Save Confusion Matrix as a visual plot
+try:
+    fig, ax = plt.subplots(figsize=(6, 5))
+    cax = ax.matshow(cm, cmap=plt.cm.Blues)
+    fig.colorbar(cax)
+    
+    # Set ticks and labels
+    ax.set_xticks(np.arange(len(labels)))
+    ax.set_yticks(np.arange(len(labels)))
+    ax.set_xticklabels(labels)
+    ax.set_yticklabels(labels)
+    
+    # Add annotations inside matrix
+    for i in range(len(labels)):
+        for j in range(len(labels)):
+            ax.text(j, i, str(cm[i, j]), va='center', ha='center', color='black', fontsize=12)
+            
+    plt.xlabel('Predicted Label')
+    plt.ylabel('True Label')
+    plt.title('Sentiment Classifier Confusion Matrix', pad=20)
+    plt.savefig('confusion_matrix.png', bbox_inches='tight', dpi=300)
+    print("\nVisual confusion matrix plot successfully saved to 'confusion_matrix.png'")
+except Exception as e:
+    print(f"\nCould not save visual confusion matrix plot: {e}")
+
